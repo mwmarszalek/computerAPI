@@ -14,6 +14,7 @@ namespace HelloWorld.Data
                 // _config = config;
                 _connectionString = config.GetConnectionString("DefaultConnection");
             }
+           
             
             public IEnumerable<T> LoadData<T>(string sql)
             {
