@@ -1,10 +1,20 @@
 using Microsoft.EntityFrameworkCore;
 using HelloWorld.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace HelloWorld.Models.Data
 {
     public class DataContextEF : DbContext
     {
+
+
+            private IConfiguration _config;
+        
+            public DataContextEF(IConfiguration config)
+            {
+                _config = config;
+
+            }
 
 
         public DbSet<Computer>? Computer {get; set;}
@@ -13,7 +23,7 @@ namespace HelloWorld.Models.Data
         {
             if (!options.IsConfigured) 
             {
-                options.UseSqlServer("Server=localhost;Database=DotnetCourseDatabase;TrustServerCertificate=true;Trusted_Connection=false;User id=sa;Password=SQLConnect1;",
+                options.UseSqlServer(_config.GetConnectionString("DefaultConnection"),
                 options => options.EnableRetryOnFailure());
             }
         }
