@@ -3,6 +3,7 @@ using System.Data;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using AutoMapper;
 using Dapper;
 using HelloWorld.Data;
 using HelloWorld.Models;
@@ -61,55 +62,88 @@ namespace HelloWorld
 
             // openFile.Close();
 
-            string computersJson = File.ReadAllText("Computers.json");
+            string computersJson = File.ReadAllText("ComputersSnake.json");
 
-            // Console.WriteLine(computersJson);
-
-            JsonSerializerOptions options = new JsonSerializerOptions()
+            Mapper mapper = new Mapper(new MapperConfiguration((cfg) =>
             {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            };
+                cfg.CreateMap<ComputerSnake, Computer>()
+                .ForMember(destination => destination.ComputerId, options =>
+                options.MapFrom(source => source.computer_id))
+                .ForMember(destination => destination.CPUCores, options =>
+                options.MapFrom(source => source.cpu_cores))
+                .ForMember(destination => destination.HasLTE, options =>
+                options.MapFrom(source => source.has_lte))
+                .ForMember(destination => destination.HasWifi, options =>
+                options.MapFrom(source => source.has_wifi))
+                .ForMember(destination => destination.Motherboard, options =>
+                options.MapFrom(source => source.motherboard))
+                .ForMember(destination => destination.ReleaseDate, options =>
+                options.MapFrom(source => source.release_date))
+                .ForMember(destination => destination.Price, options =>
+                options.MapFrom(source => source.price));
+            }));
 
-            IEnumerable<Computer>? computersNewtonsoft = JsonConvert.DeserializeObject<IEnumerable<Computer>>(computersJson);
+            IEnumerable<ComputerSnake>? computersSystem = System.Text.Json.JsonSerializer.Deserialize<IEnumerable<ComputerSnake>>(computersJson);
 
-            IEnumerable<Computer>? computersSystem = System.Text.Json.JsonSerializer.Deserialize<IEnumerable<Computer>>(computersJson, options);
 
-            if (computersNewtonsoft != null)
+            IEnumerable<Computer>? computersSystemJsonPropertyMapping = System.Text.Json.JsonSerializer.Deserialize<IEnumerable<Computer>>(computersJson);
+
+            if (computersSystemJsonPropertyMapping != null)
             {
-                foreach (Computer computer in computersNewtonsoft)
+
+                foreach (Computer computer in computersSystemJsonPropertyMapping)
                 {
-                    string sql = @"INSERT INTO TutorialAppSchema.Computer (
-                Motherboard,
-                HasWifi,
-                HasLTE,
-                ReleaseDate,
-                Price,
-                VideoCard
-            ) VALUES ('" + EscapeSingleQuote(computer.Motherboard)
-                   + "','" + computer.HasWifi
-                   + "','" + computer.HasLTE
-                   + "','" + computer.ReleaseDate
-                   + "','" + computer.Price
-                   + "','" + EscapeSingleQuote(computer.VideoCard)
-           + "')";
-           
-                dapper.ExecuteSql(sql);
+                    Console.WriteLine(computer.Motherboard);
                 }
             }
 
 
-            JsonSerializerSettings settings = new JsonSerializerSettings()
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
-            };
 
-            string computersCopyNewtonsoft = JsonConvert.SerializeObject(computersNewtonsoft, settings);
+            // Console.WriteLine(computersJson);
 
-            File.WriteAllText("computersCopyNewtonsoft.txt", computersCopyNewtonsoft);
+            //     JsonSerializerOptions options = new JsonSerializerOptions()
+            //     {
+            //         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            //     };
 
-            string computersCopySystem = System.Text.Json.JsonSerializer.Serialize(computersSystem, options);
+            //     IEnumerable<Computer>? computersNewtonsoft = JsonConvert.DeserializeObject<IEnumerable<Computer>>(computersJson);
 
-            File.WriteAllText("computersCopySystem.txt", computersCopySystem);
+            //     if (computersNewtonsoft != null)
+            //     {
+            //         foreach (Computer computer in computersNewtonsoft)
+            //         {
+            //             string sql = @"INSERT INTO TutorialAppSchema.Computer (
+            //         Motherboard,
+            //         HasWifi,
+            //         HasLTE,
+            //         ReleaseDate,
+            //         Price,
+            //         VideoCard
+            //     ) VALUES ('" + EscapeSingleQuote(computer.Motherboard)
+            //            + "','" + computer.HasWifi
+            //            + "','" + computer.HasLTE
+            //            + "','" + computer.ReleaseDate
+            //            + "','" + computer.Price
+            //            + "','" + EscapeSingleQuote(computer.VideoCard)
+            //    + "')";
+
+            //         dapper.ExecuteSql(sql);
+            //         }
+            //     }
+
+
+            //     JsonSerializerSettings settings = new JsonSerializerSettings()
+            //     {
+            //         ContractResolver = new CamelCasePropertyNamesContractResolver()
+            //     };
+
+            //     string computersCopyNewtonsoft = JsonConvert.SerializeObject(computersNewtonsoft, settings);
+
+            //     File.WriteAllText("computersCopyNewtonsoft.txt", computersCopyNewtonsoft);
+
+            //     string computersCopySystem = System.Text.Json.JsonSerializer.Serialize(computersSystem, options);
+
+            //     File.WriteAllText("computersCopySystem.txt", computersCopySystem);
 
         }
 
